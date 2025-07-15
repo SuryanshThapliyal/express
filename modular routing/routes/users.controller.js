@@ -1,6 +1,7 @@
 import { users } from "../../data/users.js";
 import { item } from "../../data/items.js";
 import {v4 as uuidv4} from 'uuid';
+import validator from 'validator';
 
 export const getAllUsers = (req, res) => {
     res.json(users);
@@ -8,6 +9,9 @@ export const getAllUsers = (req, res) => {
 
 
 export const getUserById= (req, res) => {
+    if(!validator.isUUID(req.params.id)) {
+        return res.status(400).json({error: 'Invalid user ID format'});
+    }
     const user = users.find(u => u.id === parseInt(req.params.id))
     user ? res.send(user) : res.status(404).send('User not found');
 }
@@ -28,6 +32,9 @@ export const createUser = (req, res) => {
     
 
     export const updateUser = (req, res) => {
+        if(!validator.isUUID(req.params.id)) {
+        return res.status(400).json({error: 'Invalid user ID format'});
+    }
     const user = users.find(u => u.id === parseInt(req.params.id));
     if (!user) return res.status(404).send('User not found');
     user.username = req.body.username || user.username;
@@ -35,6 +42,9 @@ export const createUser = (req, res) => {
 }
 
 export const deleteUser = (req, res) => {
+    if(!validator.isUUID(req.params.id)) {
+        return res.status(400).json({error: 'Invalid user ID format'});
+    }
     const index = users.findIndex(u=> u.id === parseInt(req.params.id));
     if (index === -1) return res.status(404).send('user not found');
     const removedUser = users.splice(index, 1);
