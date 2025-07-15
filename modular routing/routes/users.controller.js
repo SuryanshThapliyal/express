@@ -16,6 +16,18 @@ export const getUserById= (req, res) => {
     user ? res.send(user) : res.status(404).send('User not found');
 }
 
+export const getUserWithFilter = (req, res) => {
+    const {username} = req.query;
+    let filteredUsers = users;
+    if (username) {
+        filteredUsers = filteredUsers.filter(u =>u.username.toLowerCase().includes((username.toLowerCase()))
+    );
+    
+    }
+    res.status(200).json(filteredUsers);
+};
+
+
 export const createUser = (req, res) => {
     const { username, email } = req.body;
     if (!username || !email) {
