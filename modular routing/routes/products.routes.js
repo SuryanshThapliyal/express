@@ -1,12 +1,9 @@
 import express from 'express';
+import { addItem, listItems } from './users.controller.js';
 const router = express.Router();
 
-router.get('/', (req, res) => {
-    res.send('all products');
-});
+router.post('/', addItem);
 
-router.get('/:id', (req, res) => {
-    res.send(`products id ${req.params.id}`);
-});
+router.get('/', listItems);
 
 export default router;
