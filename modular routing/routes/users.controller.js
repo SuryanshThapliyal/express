@@ -9,6 +9,9 @@ export const getAllUsers = (req, res) => {
 
 
 export const getUserById= (req, res) => {
+    if(!req.params.id) {
+        return res.status(400).json({error: 'User ID is required'});
+    }
     if(!validator.isUUID(req.params.id)) {
         return res.status(400).json({error: 'Invalid user ID format'});
     }
@@ -17,6 +20,9 @@ export const getUserById= (req, res) => {
 }
 
 export const getUserWithFilter = (req, res) => {
+    if(!req.query.username) {
+        return res.status(400).json({error: 'Username query parameter is required'});
+    }
     const {username} = req.query;
     let filteredUsers = users;
     if (username) {
@@ -29,6 +35,10 @@ export const getUserWithFilter = (req, res) => {
 
 
 export const createUser = (req, res) => {
+    const token = req.headers['x-custom-token'];
+    if(token !== 'my-secret-token-123'){
+        return res.status(403).send('Forbidden: Invalid token');
+    }
     const { username, email } = req.body;
     if (!username || !email) {
         return res.status(400).send('Username and email are required');
@@ -44,6 +54,9 @@ export const createUser = (req, res) => {
     
 
     export const updateUser = (req, res) => {
+    if(!req.params.id) {
+        return res.status(400).json({error: 'User ID is required'});
+    }
         if(!validator.isUUID(req.params.id)) {
         return res.status(400).json({error: 'Invalid user ID format'});
     }
@@ -53,7 +66,52 @@ export const createUser = (req, res) => {
     res.json(user);
 }
 
+
+export const getUsers = (req, res)=> {
+    res.setHeader('halo', 'world');
+    const {username,page = 1,limit = 3, sort='asc'  } = req.query;
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+    return res.status(400).send("Page and limit must be valid positive numbers");
+}
+    if (sort && !["asc", "desc"].includes(sort)) {
+    return res.status(400).send("Invalid sort order. Use 'asc' or 'desc'");
+}
+
+    let filteredUsers = users;
+    if (username){
+    filteredUsers = filteredUsers.filter(u => u.username.toLowerCase().includes(username.toLowerCase()));
+    }
+
+    if(!filteredUsers.length) {
+        return res.status(404).json({error: 'No users found'});
+    }
+
+    if(sort==='asc'){
+        filteredUsers.sort((a,b)=>
+            a.username.localeCompare(b.username)
+        );
+    }
+        else if(sort==='desc'){
+            filteredUsers.sort((a,b)=>
+                b.username.localeCompare(a.username)
+            );
+    }
+
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+    
+    res.status(200).json(paginatedUsers);
+    
+}
+
+
+
 export const deleteUser = (req, res) => {
+    if(!req.params.id) {
+        return res.status(400).json({error: 'User ID is required'});
+    }
     if(!validator.isUUID(req.params.id)) {
         return res.status(400).json({error: 'Invalid user ID format'});
     }
@@ -75,5 +133,37 @@ export const addItem = (req, res) => {
 }
 
 export const listItems = (req, res) => {
-    res.json(item);
+    const  { page = 1, limit = 10, product, sort='asc' } = req.query;
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+    return res.status(400).send("Page and limit must be valid positive numbers");
+}
+    if (sort && !["asc", "desc"].includes(sort)) {
+    return res.status(400).send("Invalid sort order. Use 'asc' or 'desc'");
+}
+
+
+    let filteredItems = item;
+    if(product){
+    filteredItems = item.filter(i => i.name.toLowerCase().includes(product.toLowerCase()));
+    }
+
+    if(!filteredItems.length) {
+        return res.status(404).json({error: 'No items found'});
+    }
+
+    if(sort==='asc'){
+        filteredItems.sort((a,b)=>
+            a.name.localeCompare(b.name)
+        );
+    }
+        else if(sort==='desc'){
+            filteredItems.sort((a,b)=>
+                b.name.localeCompare(a.name)
+            );
+    }
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
+    res.status(200).json(paginatedItems);
 }
