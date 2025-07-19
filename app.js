@@ -1,29 +1,20 @@
+// /app.js
 import express from 'express';
-import userRoutes from './modular routing/routes/users.routes.js';
-import products from './modular routing/routes/products.routes.js';
-import { logger } from './middlewares/logger.js';
-import { requestTimer } from './middlewares/requestTimer.js';
-import {rateLimiter} from './middlewares/rateLimit.js';
-import dotenv from 'dotenv';
-import helmet from 'helmet';
-import morgan from 'morgan';
-dotenv.config();
-
+import userRoutes from './routes/users.routes.js';
 
 const app = express();
-app.use(morgan('dev'));
-app.use(helmet()); // Security middleware to set various HTTP headers
-const port = process.env.PORT || 3000;
+
 app.use(express.json());
 
-app.use(express.static('public'));
-// app.use(rateLimiter)
-// app.use(logger);
-app.use(requestTimer);
-app.use('/users', rateLimiter,userRoutes);
-app.use('/products', products );
+// mount route
+app.use('/api/users', userRoutes);
 
+// error handler (basic)
+app.use((err, req, res, next) => {
+res.status(res.statusCode || 500).json({
+    message: err.message,
+    stack: process.env.NODE_ENV === 'production' ? '👀' : err.stack,
+});
+});
 
-app.listen(port, ()=> {
-    console.log(`Server is running on http://localhost:${port}`);
-})
+app.listen(3000, () => console.log('Server running on http://localhost:3000'));
