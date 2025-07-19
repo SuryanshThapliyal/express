@@ -4,13 +4,21 @@ import products from './modular routing/routes/products.routes.js';
 import { logger } from './middlewares/logger.js';
 import { requestTimer } from './middlewares/requestTimer.js';
 import {rateLimiter} from './middlewares/rateLimit.js';
+import dotenv from 'dotenv';
+import helmet from 'helmet';
+import morgan from 'morgan';
+dotenv.config();
+
+
 const app = express();
-const port = 8080;
+app.use(morgan('dev'));
+app.use(helmet()); // Security middleware to set various HTTP headers
+const port = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use(express.static('public'));
 // app.use(rateLimiter)
-app.use(logger);
+// app.use(logger);
 app.use(requestTimer);
 app.use('/users', rateLimiter,userRoutes);
 app.use('/products', products );
